@@ -16,7 +16,9 @@ export default function TaskListItem({ task }: { task: Task }) {
   return (
     <Link href={`/${task._id}`} asChild>
       <Pressable style={styles.container}>
-        <Text style={styles.text}>{task.description}</Text>
+        <Text style={styles.text}>
+          {task.position}: {task.description}
+        </Text>
 
         <AntDesign onPress={deleteTask} name="close" size={16} color="gray" />
       </Pressable>

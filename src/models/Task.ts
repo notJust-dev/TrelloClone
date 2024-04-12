@@ -7,6 +7,8 @@ export class Task extends Realm.Object<Task> {
   isComplete: boolean = false;
   createdAt: Date = new Date();
 
+  position: Realm.Types.Int = 0;
+
   user_id!: string;
 
   static primaryKey = '_id';
