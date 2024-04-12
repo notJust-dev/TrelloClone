@@ -3,15 +3,22 @@ import DraggingTask from './DraggingTask';
 import { BSON } from 'realm';
 
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useSharedValue } from 'react-native-reanimated';
+import Animated, {
+  SharedValue,
+  runOnJS,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
 
 type DraggingContext = {
+  draggingTaskId: BSON.ObjectID;
   setDraggingTask: (id: BSON.ObjectID, y: number) => void;
+  dragY?: SharedValue<number>;
 };
 
 const DraggingContext = createContext<DraggingContext>({
   setDraggingTask: () => {},
+  draggingTaskId: null,
 });
 
 const TaskDragArea = ({ children }: PropsWithChildren) => {
@@ -43,7 +50,13 @@ const TaskDragArea = ({ children }: PropsWithChildren) => {
   };
 
   return (
-    <DraggingContext.Provider value={{ setDraggingTask }}>
+    <DraggingContext.Provider
+      value={{
+        setDraggingTask,
+        dragY: draggingTaskId ? dragY : undefined,
+        draggingTaskId,
+      }}
+    >
       <GestureDetector gesture={pan}>
         <View
           style={{
