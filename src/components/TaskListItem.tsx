@@ -5,9 +5,12 @@ import { Task } from '../models/Task';
 import { useRealm } from '@realm/react';
 import { useDraggingContext } from './TaskDragArea';
 import Animated, {
+  useAnimatedReaction,
   useAnimatedStyle,
+  useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useEffect } from 'react';
 
 export const ItemHeight = 60;
 
@@ -22,44 +25,53 @@ export default function TaskListItem({
 
   const { setDraggingTask, dragY, draggingTaskId } = useDraggingContext();
 
+  const marginTop = useSharedValue(0);
+
+  useAnimatedReaction(
+    () => dragY?.value,
+    (newDragY) => {
+      if (!newDragY) {
+        marginTop.value = 0;
+      }
+      const itemY = index * ItemHeight + 73;
+
+      // if it's above the first item
+      if (index === 0 && newDragY < itemY + ItemHeight) {
+        marginTop.value = withTiming(ItemHeight);
+      }
+
+      // if it's on top of the current item
+      // TODO: keep track of the currently dragging item, and offset the comparison, becuase it is deleted form the lists
+      marginTop.value = withTiming(
+        newDragY >= itemY && newDragY < itemY + ItemHeight ? ItemHeight : 0
+      );
+    }
+  );
+
+  useEffect(() => {
+    const itemY = index * ItemHeight + 73;
+    if (draggingTaskId) {
+      marginTop.value =
+        dragY.value >= itemY && dragY.value < itemY + ItemHeight
+          ? ItemHeight
+          : 0;
+    } else {
+      marginTop.value = 0;
+    }
+  }, [draggingTaskId]);
+
   const deleteTask = () => {
     realm.write(() => {
       realm.delete(task);
     });
   };
 
-  const animatedStyle = useAnimatedStyle(() => {
-    if (!dragY) {
-      return {
-        marginTop: 0,
-      };
-    }
-    const itemY = index * ItemHeight + 73;
-
-    // if it's above the first item
-    if (index === 0 && dragY.value < itemY + ItemHeight) {
-      return {
-        marginTop: withTiming(ItemHeight),
-      };
-    }
-
-    // if it's on top of the current item
-    // TODO: keep track of the currently dragging item, and offset the comparison, becuase it is deleted form the lists
-    return {
-      marginTop: withTiming(
-        dragY.value >= itemY && dragY.value < itemY + ItemHeight
-          ? ItemHeight
-          : 0
-      ),
-    };
-  });
-
   if (draggingTaskId?.toString() === task._id.toString()) {
-    return <Animated.View style={animatedStyle} />;
+    return <Animated.View style={{ marginTop }} />;
   }
 
   return (
-    <Animated.View style={[styles.root, animatedStyle]}>
+    <Animated.View style={[styles.root, { marginTop: marginTop }]}>
       <Link href={`/${task._id}`} asChild>
         <Pressable
           style={styles.container}
