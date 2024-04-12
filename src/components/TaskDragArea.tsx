@@ -23,6 +23,10 @@ const TaskDragArea = ({ children }: PropsWithChildren) => {
   const dragY = useSharedValue(0);
 
   const pan = Gesture.Pan()
+    .manualActivation(true)
+    .onTouchesMove((event, stateManager) => {
+      stateManager.activate();
+    })
     .onChange((event) => {
       dragX.value = dragX.value + event.changeX;
       dragY.value = dragY.value + event.changeY;
@@ -40,34 +44,30 @@ const TaskDragArea = ({ children }: PropsWithChildren) => {
 
   return (
     <DraggingContext.Provider value={{ setDraggingTask }}>
-      {children}
       <GestureDetector gesture={pan}>
-        {draggingTaskId ? (
-          <View
+        <View
+          style={{
+            ...StyleSheet.absoluteFill,
+          }}
+        >
+          {children}
+
+          <Animated.View
             style={{
-              ...StyleSheet.absoluteFill,
-              backgroundColor: 'rgba(100,100,100, 0.8)',
+              width: width - 40,
+              position: 'absolute',
+              top: dragY,
+              left: dragX,
+              transform: [
+                {
+                  rotateZ: '3deg',
+                },
+              ],
             }}
           >
-            <Animated.View
-              style={{
-                width: width - 40,
-                position: 'absolute',
-                top: dragY,
-                left: dragX,
-                transform: [
-                  {
-                    rotateZ: '3deg',
-                  },
-                ],
-              }}
-            >
-              <DraggingTask id={draggingTaskId} />
-            </Animated.View>
-          </View>
-        ) : (
-          <View />
-        )}
+            {draggingTaskId && <DraggingTask id={draggingTaskId} />}
+          </Animated.View>
+        </View>
       </GestureDetector>
     </DraggingContext.Provider>
   );
