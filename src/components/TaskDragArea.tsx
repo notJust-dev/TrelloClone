@@ -6,6 +6,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
   runOnJS,
+  useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
@@ -14,6 +16,7 @@ type DraggingContext = {
   draggingTaskId: BSON.ObjectID;
   setDraggingTask: (id: BSON.ObjectID, y: number) => void;
   dragY?: SharedValue<number>;
+  dragOffsetY?: SharedValue<number>;
 };
 
 const DraggingContext = createContext<DraggingContext>({
@@ -32,6 +35,7 @@ const TaskDragArea = ({
 
   const dragX = useSharedValue(0);
   const dragY = useSharedValue(0);
+  const dragOffsetY = useSharedValue(0);
 
   const drop = () => {
     updateItemPosition(draggingTaskId, dragY.value);
@@ -64,12 +68,20 @@ const TaskDragArea = ({
     dragX.value = 20;
   };
 
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      top: dragY.value - dragOffsetY.value,
+      left: dragX.value,
+    };
+  });
+
   return (
     <DraggingContext.Provider
       value={{
         setDraggingTask,
         dragY: draggingTaskId ? dragY : undefined,
         draggingTaskId,
+        dragOffsetY,
       }}
     >
       <GestureDetector gesture={pan}>
@@ -81,17 +93,18 @@ const TaskDragArea = ({
           {children}
 
           <Animated.View
-            style={{
-              width: width - 40,
-              position: 'absolute',
-              top: dragY,
-              left: dragX,
-              transform: [
-                {
-                  rotateZ: '3deg',
-                },
-              ],
-            }}
+            style={[
+              animatedStyle,
+              {
+                width: width - 40,
+                position: 'absolute',
+                transform: [
+                  {
+                    rotateZ: '3deg',
+                  },
+                ],
+              },
+            ]}
           >
             {draggingTaskId && <DraggingTask id={draggingTaskId} />}
           </Animated.View>
