@@ -21,22 +21,37 @@ const DraggingContext = createContext<DraggingContext>({
   draggingTaskId: null,
 });
 
-const TaskDragArea = ({ children }: PropsWithChildren) => {
+const TaskDragArea = ({
+  children,
+  updateItemPosition,
+}: PropsWithChildren<{
+  updateItemPosition: (id: BSON.ObjectID, y: number) => void;
+}>) => {
   const [draggingTaskId, setDraggingTaskId] = useState<BSON.ObjectID>(null);
-
   const { width } = useWindowDimensions();
 
   const dragX = useSharedValue(0);
   const dragY = useSharedValue(0);
 
+  const drop = () => {
+    updateItemPosition(draggingTaskId, dragY.value);
+    setDraggingTaskId(null);
+  };
+
   const pan = Gesture.Pan()
     .manualActivation(true)
     .onTouchesMove((event, stateManager) => {
-      stateManager.activate();
+      if (draggingTaskId) {
+        stateManager.activate();
+      }
     })
     .onChange((event) => {
       dragX.value = dragX.value + event.changeX;
       dragY.value = dragY.value + event.changeY;
+    })
+    .onEnd(() => {
+      console.log('Dropped');
+      runOnJS(drop)();
     })
     .onFinalize(() => {
       runOnJS(setDraggingTaskId)(null);
