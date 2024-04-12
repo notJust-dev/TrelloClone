@@ -5,6 +5,7 @@ module.exports = function (api) {
     plugins: [
       '@realm/babel-plugin',
       ['@babel/plugin-proposal-decorators', { legacy: true }],
+      'react-native-reanimated/plugin',
     ],
   };
 };

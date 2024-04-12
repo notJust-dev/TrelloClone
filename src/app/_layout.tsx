@@ -4,10 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme } from '@react-navigation/native';
 import Realm from '../providers/Realm';
 import { FontAwesome } from '@expo/vector-icons';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={DarkTheme}>
         <Realm>
           <Stack
@@ -31,6 +32,6 @@ export default function RootLayout() {
         </Realm>
       </ThemeProvider>
       <StatusBar style="light" />
-    </>
+    </GestureHandlerRootView>
   );
 }

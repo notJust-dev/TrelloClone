@@ -1,6 +1,7 @@
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import TaskList from './TaskList';
 import { LinearGradient } from 'expo-linear-gradient';
+import TaskDragArea from './TaskDragArea';
 
 export default function TaskBoard() {
   return (
@@ -10,9 +11,10 @@ export default function TaskBoard() {
         colors={['#8711c1', '#2472fc']}
         style={StyleSheet.absoluteFill}
       />
-      <SafeAreaView>
+
+      <TaskDragArea>
         <TaskList />
-      </SafeAreaView>
+      </TaskDragArea>
     </View>
   );
 }
