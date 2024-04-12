@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    height: 60,
   },
   text: {
     color: 'white',

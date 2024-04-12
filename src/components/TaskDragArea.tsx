@@ -7,7 +7,7 @@ import Animated, { runOnJS, useSharedValue } from 'react-native-reanimated';
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
 
 type DraggingContext = {
-  setDraggingTask: (id: BSON.ObjectID) => void;
+  setDraggingTask: (id: BSON.ObjectID, y: number) => void;
 };
 
 const DraggingContext = createContext<DraggingContext>({
@@ -23,16 +23,19 @@ const TaskDragArea = ({ children }: PropsWithChildren) => {
   const dragY = useSharedValue(0);
 
   const pan = Gesture.Pan()
-    .onUpdate((event) => {
-      dragX.value = event.absoluteX;
-      dragY.value = event.absoluteY;
+    .onChange((event) => {
+      dragX.value = dragX.value + event.changeX;
+      dragY.value = dragY.value + event.changeY;
     })
     .onFinalize(() => {
       runOnJS(setDraggingTaskId)(null);
     });
 
-  const setDraggingTask = (id: BSON.ObjectID) => {
+  const setDraggingTask = (id: BSON.ObjectID, y: number) => {
     setDraggingTaskId(id);
+
+    dragY.value = y;
+    dragX.value = 20;
   };
 
   return (
@@ -52,6 +55,11 @@ const TaskDragArea = ({ children }: PropsWithChildren) => {
                 position: 'absolute',
                 top: dragY,
                 left: dragX,
+                transform: [
+                  {
+                    rotateZ: '3deg',
+                  },
+                ],
               }}
             >
               <DraggingTask id={draggingTaskId} />
